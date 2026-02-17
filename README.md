@@ -35,21 +35,25 @@ In an age of information overload, standard bookmark managers are obsolete. Smar
 
 ## 🚧 Technical Challenges & Engineering Solutions
 
-### 1. Synchronizing User State with Supabase Auth
-*   **The Challenge**: Ensuring a seamless "Identity Matrix" update (user profile) where changes in the Supabase Auth layer reflected immediately in the UI without forcing a full page reload or inconsistent state.
-*   **The Solution**: Implemented a robust state-syncing strategy using React's `useEffect` and `useState` hooks to monitor the Supabase session. I decoupled the profile update logic into a localized `SettingsView` with optimistic UI updates and error-handling toasts (Sonner), ensuring a smooth user experience even during asynchronous network requests.
+### 1. Navigating Bleeding-Edge Framework Transitions (Next.js 16 Proxy)
+*   **The Challenge**: During development, Next.js 16 released a major update deprecating the standard `middleware.ts` convention in favor of a specialized `proxy.ts` architecture. This caused significant routing and authentication "ghosting" in the production environment.
+*   **The Solution**: I proactively refactored the entire request-interception layer, migrating logic from `middleware.ts` to the new `proxy.ts` protocol. This ensured compatibility with the latest Vercel Edge Runtime and maintained a secure barrier between the landing pages and the private dashboard.
 
-### 2. Balancing High-Fidelity Design with WCAG Accessibility
-*   **The Challenge**: Maintaining a minimalist, "glassmorphic" aesthetic while adhering to strict accessibility standards. The Radix UI `Dialog` components initially threw runtime errors due to missing `DialogTitle` descriptors in my minimalist modal designs.
-*   **The Solution**: Instead of suppressing these warnings, I re-engineered the modal header components. I utilized the `DialogHeader` and `DialogTitle` primitives but applied `sr-only` (Screen Reader Only) utility classes. This ensured that screen readers could correctly identify the modal context (e.g., "Stripe Payment Gateway") for visually impaired users without compromising the futuristic, clean visual design.
+### 2. Zero-Trust Data Isolation via Supabase RLS
+*   **The Challenge**: Managing a decentralized bookmark vault requires that data is never accessible to unauthorized "nodes" or other users, even if the database API is directly queried.
+*   **The Solution**: I architected a **Zero-Trust** security model using Supabase Row Level Security (RLS). By implementing SQL-level policies (`auth.uid() = user_id`), I ensured that data isolation is enforced at the database layer, making it physically impossible for one user to intercept another's neural assets, regardless of frontend vulnerabilities.
 
-### 3. Modularizing Complex Modal Logic for Scalability
-*   **The Challenge**: Integrating a comprehensive Stripe billing simulation and an invoice generation system into the same dashboard created a risk of a "Mega-Component," making the code difficult to test and maintain.
-*   **The Solution**: I adopted a **Component-Driven Development** (CDD) approach by abstracting the Stripe Gateway and Invoice Viewer into independent, reusable components (`StripeModal` and `InvoiceModal`). This allowed for a clean, declarative dashboard implementation where the parent only manages the visibility state, while the child components handle their own internal data lifecycle and animations.
+### 3. Cross-Environment Identity Synchronization
+*   **The Challenge**: Deployment to Vercel introduced complex redirect loops where the Supabase Auth server would default to `localhost` even in a production state, leading to "Connection Refused" errors for external users.
+*   *   **The Solution**: I implemented a dynamic environment configuration handler that synchronizes the `Site URL` and `Redirect URLs` between the local development node and the production Vercel node. This involved configuring Supabase Auth settings to recognize the production origin as a trusted secure bridge.
 
 ### 4. Eliminating Cumulative Layout Shift (CLS) in Dynamic Hero Mockups
-*   **The Challenge**: The "Neural Scan" hero section uses complex image mockups and animations that initially caused layout jumps during the Turbopack build process, hurting the Core Web Vitals score.
-*   **The Solution**: I moved from static image placeholders to a **CSS-calculated aspect-ratio container** powered by Framer Motion. By pre-defining the container's geometry and using GPU-accelerated transforms for the scan-line animation, I achieved a stable 16:9 layout that remains consistent across all screen sizes while keeping CPU overhead remarkably low.
+*   **The Challenge**: High-fidelity hero animations often cause layout jumps during hydration, hurting Core Web Vitals and User Experience.
+*   **The Solution**: I moved from static images to a **CSS-calculated aspect-ratio container** powered by Framer Motion. By pre-defining geometry and using GPU-accelerated transforms (transforms vs top/left), I achieved a stable 100% layout consistency with zero shifts across all viewport sizes.
+
+### 5. Balancing High-Fidelity Design with WCAG Accessibility
+*   **The Challenge**: Maintaining a "glassmorphic" aesthetic while adhering to accessibility standards (Radix UI runtime errors for missing descriptors).
+*   **The Solution**: I utilized `sr-only` (Screen Reader Only) utility classes within the Radix UI primitives. This ensures screen readers can identify modal contexts (e.g., "Stripe Secure Relay") without compromising the professional, minimalist cyberpunk visual design.
 
 ---
 
